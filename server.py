@@ -47,6 +47,7 @@ class QueryResponse(BaseModel):
     sql: Optional[str] = None
     explanation: Optional[str] = None
     results: Optional[dict] = None
+    chart_config: Optional[dict] = None
     error: Optional[str] = None
 
 # --- Routes ---
@@ -107,6 +108,13 @@ async def process_query(request: QueryRequest):
                 error=exec_result.error
             )
 
+        
+        # E. Chart Suggestion
+        chart_config = None
+        if exec_result.success and exec_result.columns and exec_result.rows:
+            # Only ask for chart if we have data
+            chart_config = llm_service.suggest_chart(user_query, exec_result.columns)
+
         return QueryResponse(
             context=context_data,
             sql=sql_result.sql,
@@ -114,7 +122,8 @@ async def process_query(request: QueryRequest):
             results={
                 "columns": exec_result.columns,
                 "rows": exec_result.rows
-            }
+            },
+            chart_config=chart_config
         )
 
     except Exception as e:

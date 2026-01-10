@@ -1,3 +1,5 @@
+let currentChart = null;
+
 async function sendQuery() {
     const input = document.getElementById("userQuery");
     const query = input.value.trim();
@@ -7,6 +9,7 @@ async function sendQuery() {
     document.getElementById("loading").classList.remove("hidden");
     document.getElementById("resultsArea").classList.add("hidden");
     document.getElementById("errorMsg").classList.add("hidden");
+    document.getElementById("chartContainer").classList.add("hidden");
     
     // Clear previous results
     document.getElementById("contextList").innerHTML = "";
@@ -74,6 +77,11 @@ async function sendQuery() {
             });
         }
 
+        // 5. Render Chart
+        if (data.chart_config) {
+            renderChart(data.chart_config, data.results);
+        }
+
     } catch (e) {
         document.getElementById("loading").classList.add("hidden");
         const errEl = document.getElementById("errorMsg");
@@ -95,6 +103,62 @@ function copySql() {
         const original = btn.textContent;
         btn.textContent = "Copied!";
         setTimeout(() => btn.textContent = original, 2000);
+    });
+}
+
+function renderChart(config, data) {
+    const ctx = document.getElementById('dataChart').getContext('2d');
+    const chartContainer = document.getElementById('chartContainer');
+    
+    // Unhide container
+    chartContainer.classList.remove('hidden');
+
+    // Destroy old chart if exists
+    if (currentChart) {
+        currentChart.destroy();
+    }
+
+    // Extract Data using Column Mapping Strategy
+    const xColIndex = data.columns.indexOf(config.x_column);
+    const yColIndex = data.columns.indexOf(config.y_column);
+
+    if (xColIndex === -1 || yColIndex === -1) {
+        console.warn("Chart columns not found in data result.");
+        chartContainer.classList.add('hidden');
+        return;
+    }
+
+    const labels = data.rows.map(row => row[xColIndex]);
+    const values = data.rows.map(row => row[yColIndex]);
+
+    // Create New Chart
+    currentChart = new Chart(ctx, {
+        type: config.chart_type,
+        data: {
+            labels: labels,
+            datasets: [{
+                label: config.label || config.y_column,
+                data: values,
+                backgroundColor: 'rgba(37, 99, 235, 0.5)',
+                borderColor: 'rgba(37, 99, 235, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                title: {
+                    display: true,
+                    text: config.title
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
     });
 }
 

@@ -1,14 +1,15 @@
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 import json
 import os
-from typing import List
+from typing import List, Optional, Dict, Any
 from app.domain.interfaces import ILLMService
 from app.domain.models import SQLGeneration, SchemaInfo
 
 class GeminiService(ILLMService):
     def __init__(self, api_key: str, model_name: str = "gemini-3-flash-preview"):
-        genai.configure(api_key=api_key)
-        self.model = genai.GenerativeModel(model_name)
+        self.client = genai.Client(api_key=api_key)
+        self.model_name = model_name
 
     def _sanitize_text(self, text: str) -> str:
         """
@@ -43,24 +44,25 @@ class GeminiService(ILLMService):
         2. Use the provided schema names exactly.
         """
         
-        # Define Schema for Structure Output
-        generation_config = genai.GenerationConfig(
-            response_mime_type="application/json",
-            response_schema={
-                "type": "object",
-                "properties": {
-                    "sql": {"type": "string"},
-                    "explanation": {"type": "string"},
-                    "is_safe": {"type": "boolean"}
-                },
-                "required": ["sql", "explanation", "is_safe"]
-            }
-        )
-
         prompt = self._sanitize_text(prompt)
 
         try:
-            response = self.model.generate_content(prompt, generation_config=generation_config)
+            response = self.client.models.generate_content(
+                model=self.model_name,
+                contents=prompt,
+                config=types.GenerateContentConfig(
+                    response_mime_type="application/json",
+                    response_schema={
+                        "type": "object",
+                        "properties": {
+                            "sql": {"type": "string"},
+                            "explanation": {"type": "string"},
+                            "is_safe": {"type": "boolean"}
+                        },
+                        "required": ["sql", "explanation", "is_safe"]
+                    }
+                )
+            )
             data = json.loads(response.text)
             return SQLGeneration(
                 sql=data.get("sql", ""),
@@ -78,18 +80,66 @@ class GeminiService(ILLMService):
         Identify the top 3-5 most relevant tables needed to answer this query.
         """
         
-        generation_config = genai.GenerationConfig(
-            response_mime_type="application/json",
-            response_schema={
-                "type": "array",
-                "items": {"type": "string"}
-            }
-        )
-
         prompt = self._sanitize_text(prompt)
 
         try:
-            response = self.model.generate_content(prompt, generation_config=generation_config)
+            response = self.client.models.generate_content(
+                model=self.model_name,
+                contents=prompt,
+                config=types.GenerateContentConfig(
+                    response_mime_type="application/json",
+                    response_schema={
+                        "type": "array",
+                        "items": {"type": "string"}
+                    }
+                )
+            )
             return json.loads(response.text)
         except:
             return []
+
+    def suggest_chart(self, query: str, columns: List[str]) -> Optional[Dict[str, Any]]:
+        prompt = f"""
+        Analyze the user query and the returned data columns to suggest the best visualization chart type.
+        
+        User Query: "{query}"
+        Columns: {columns}
+        
+        Return a configuration JSON.
+        - "chart_type": One of ["bar", "line", "pie", "doughnut", "scatter", "none"]. Use "none" if a table is better.
+        - "title": A concise title for the chart.
+        - "x_column": The column name to use for the X-axis (labels).
+        - "y_column": The column name to use for the Y-axis (values).
+        - "label": A label for the dataset (e.g., "Total Revenue").
+        
+        If "chart_type" is "none", other fields can be null.
+        """
+        
+        prompt = self._sanitize_text(prompt)
+
+        try:
+            response = self.client.models.generate_content(
+                model=self.model_name,
+                contents=prompt,
+                config=types.GenerateContentConfig(
+                    response_mime_type="application/json",
+                    response_schema={
+                        "type": "object",
+                        "properties": {
+                            "chart_type": {"type": "string"},
+                            "title": {"type": "string"},
+                            "x_column": {"type": "string"},
+                            "y_column": {"type": "string"},
+                            "label": {"type": "string"}
+                        },
+                        "required": ["chart_type", "title", "x_column", "y_column", "label"]
+                    }
+                )
+            )
+            
+            data = json.loads(response.text)
+            if data.get("chart_type") == "none":
+                return None
+            return data
+        except:
+            return None

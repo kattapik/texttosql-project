@@ -47,5 +47,15 @@ This document tracks the development decision flow, AI reasoning, and major impl
   - Implemented Professional Light Mode (Inter font, minimalist layout).
   - Improved Mobile Responsiveness.
 
-## Phase 6: Verifying
+## Phase 6: Data Visualization
+- [x] Backend: Implemented `GeminiService.suggest_chart` using AI to determine chart type.
+- [x] Frontend: Integrated `Chart.js` for dynamic chart rendering.
+- [x] Strategy: Used "Column Mapping" (mapping SQL columns to X/Y axes) instead of regenerating data.
+
+## Phase 7: SDK Migration
+- [x] Migrated from deprecated `google.generativeai` to `google-genai` (v1.0+ Client).
+- [x] Updated `requirements.txt`.
+- [x] Refactored `GeminiService` to use `genai.Client` and `types`.
+
+## Phase 8: Verifying
 - Testing Web App interactions.

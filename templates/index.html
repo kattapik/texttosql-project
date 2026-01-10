@@ -7,6 +7,7 @@
     <title>Text-to-SQL Studio</title>
     <link rel="stylesheet" href="/static/css/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
 <body>
@@ -70,6 +71,14 @@
 
                 <!-- Error Message -->
                 <div id="errorMsg" class="error-banner hidden"></div>
+
+                <!-- Chart Area -->
+                <div id="chartContainer" class="panel hidden">
+                    <h3><span class="icon-sm">📈</span> Visualization</h3>
+                    <div style="position: relative; height: 300px; width: 100%;">
+                        <canvas id="dataChart"></canvas>
+                    </div>
+                </div>
 
                 <!-- Data Table -->
                 <div class="panel table-panel">
