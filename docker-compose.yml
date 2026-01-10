@@ -1,0 +1,15 @@
+name: texttosql
+
+services:
+  app:
+    container_name: texttosql_container
+    build: .
+    # Automatically load environment variables from the .env file
+    env_file:
+      - .env
+    # Mount the data directory for persistence
+    volumes:
+      - ./data:/app/data
+    # Enable interactive mode (Crucial for python input())
+    stdin_open: true 
+    tty: true

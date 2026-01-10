@@ -1,0 +1,11 @@
+__pycache__
+env
+venv
+.venv
+.git
+.gitignore
+Dockerfile
+docker-compose.yml
+docs
+# Exclude the DB from the build (we mount it instead)
+sqlite.db
