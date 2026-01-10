@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text-to-SQL Studio</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <span class="icon"></span>
+                <span>Text2SQL</span>
+            </div>
+            <nav>
+                <a href="#" class="active">Query</a>
+                <a href="#">History</a>
+                <a href="#">Settings</a>
+            </nav>
+            <div class="status">
+                <span class="dot"></span> System Ready
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="content">
+            <header>
+                <h2>New Query</h2>
+                <p>Convert natural language into database instructions instantly.</p>
+            </header>
+
+            <section class="query-box">
+                <div class="input-wrapper">
+                    <textarea id="userQuery"
+                        placeholder="Describe your data request... e.g., 'Show top 5 most expensive products'"></textarea>
+                    <button id="sendBtn" onclick="sendQuery()">Generate SQL</button>
+                </div>
+            </section>
+
+            <!-- Loading State -->
+            <div id="loading" class="loading-state hidden">
+                <div class="loader"></div>
+                <span>Analyzing Schema & Context...</span>
+            </div>
+
+            <!-- Results -->
+            <div id="resultsArea" class="results-container hidden">
+
+                <!-- Split View: Context & SQL -->
+                <div class="meta-row">
+                    <div class="panel context-panel">
+                        <h3><span class="icon-sm"></span> Context Found</h3>
+                        <div id="contextList" class="tag-cloud"></div>
+                    </div>
+
+                    <div class="panel sql-panel">
+                        <h3><span class="icon-sm"></span> Generated SQL</h3>
+                        <div class="code-block">
+                            <code id="sqlOutput">SELECT * ...</code>
+                            <button class="copy-btn" onclick="copySql()">Copy</button>
+                        </div>
+                        <p id="explanation" class="explanation-text"></p>
+                    </div>
+                </div>
+
+                <!-- Error Message -->
+                <div id="errorMsg" class="error-banner hidden"></div>
+
+                <!-- Data Table -->
+                <div class="panel table-panel">
+                    <h3><span class="icon-sm"></span> Result Data</h3>
+                    <div class="table-scroll">
+                        <table id="dataTable">
+                            <thead id="tableHead"></thead>
+                            <tbody id="tableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="/static/js/script.js"></script>
+</body>
+
+</html>

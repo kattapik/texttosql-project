@@ -31,5 +31,21 @@ This document tracks the development decision flow, AI reasoning, and major impl
 - [x] Modified `init_db.py` to automatically seed data (Users, Products, Orders, Reviews) upon initialization.
 - [x] Verified database population (size ~136KB).
 
-## Phase 3: Verifying
-- Testing with user queries.
+## Phase 3: RAG Strategy Discussion
+- [x] Discussed Vector DB vs. LLM.
+- [x] Decision: Keep current "Simple RAG" (Keyword + LLM Guess) for MVP.
+
+## Phase 4: Web Interface
+- [x] Replaced Console UI with Flask Web App (`app.py`).
+- [x] Implemented Modern Dark Mode UI with Glassmorphism.
+- [x] Visualized RAG process (Context -> SQL -> Result).
+
+## Phase 5: Refactoring & Polish
+- [x] Migrated Backend from Flask to **FastAPI** (Async, Pydantic, Auto-docs).
+- [x] Redesigned Frontend to "Clean SaaS" Aesthetic:
+  - Removed "Gamer/Neon" style.
+  - Implemented Professional Light Mode (Inter font, minimalist layout).
+  - Improved Mobile Responsiveness.
+
+## Phase 6: Verifying
+- Testing Web App interactions.
