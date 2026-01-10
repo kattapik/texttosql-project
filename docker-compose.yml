@@ -10,6 +10,10 @@ services:
     # Mount the data directory for persistence
     volumes:
       - ./data:/app/data
+      - ./app:/app/app #for development
+      - ./init_db.py:/app/init_db.py #for development
+      - ./main.py:/app/main.py #for development
+      - ./requirements.txt:/app/requirements.txt #for development
     # Enable interactive mode (Crucial for python input())
     stdin_open: true 
     tty: true

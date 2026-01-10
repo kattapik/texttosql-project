@@ -21,5 +21,15 @@ This document tracks the development decision flow, AI reasoning, and major impl
 - [x] Schema generation (19 tables).
 - [x] Core Implementation (Domain, Infra, Services, Main) completed.
 
-## Phase 2: Verifying
+## Phase 1.5: AI Workflow Integration
+- [x] Created `.agent/workflows/ai-driven-dev.md` to standardize context loading and logging.
+- [x] Established rule to update this log after every development cycle.
+
+## Phase 2: Implementation - Seeding
+- [x] Integrated `Faker` for realistic data generation.
+- [x] Created `DataSeeder` service in `app/infrastructure/seeder.py`.
+- [x] Modified `init_db.py` to automatically seed data (Users, Products, Orders, Reviews) upon initialization.
+- [x] Verified database population (size ~136KB).
+
+## Phase 3: Verifying
 - Testing with user queries.

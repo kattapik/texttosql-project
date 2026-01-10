@@ -23,4 +23,3 @@ sqlite.db
 
 # Logs
 *.log
-docs/ai_development_log.md # Optional: if you want to track it only locally, but usually docs are committed. Keeping it un-ignored is better for this request context.

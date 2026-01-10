@@ -17,5 +17,15 @@ try:
     conn.commit()
     conn.close()
     print(f"Database initialized successfully at {DB_PATH}.")
+
+    # --- Seeding ---
+    from app.infrastructure.sqlite_db import SqliteRepository
+    from app.infrastructure.seeder import DataSeeder
+
+    print("[*] Starting Database Seeding...")
+    repo = SqliteRepository(DB_PATH)
+    seeder = DataSeeder(repo)
+    seeder.seed_all()
+
 except Exception as e:
     print(f"Error initializing database: {e}")
