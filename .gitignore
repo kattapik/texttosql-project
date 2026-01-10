@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Environment Variables
+.env
+
+# Database
+sqlite.db
+*.sqlite3
+
+# IDEs
+.vscode/
+.idea/
+
+# Logs
+*.log
+docs/ai_development_log.md # Optional: if you want to track it only locally, but usually docs are committed. Keeping it un-ignored is better for this request context.
