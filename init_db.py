@@ -25,7 +25,8 @@ try:
     print("[*] Starting Database Seeding...")
     repo = SqliteRepository(DB_PATH)
     seeder = DataSeeder(repo)
-    seeder.seed_all()
+    # Increase seed data significantly as requested
+    seeder.seed_all(num_users=100, num_products=100, num_orders=500)
 
 except Exception as e:
     print(f"Error initializing database: {e}")

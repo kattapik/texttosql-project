@@ -62,5 +62,17 @@ This document tracks the development decision flow, AI reasoning, and major impl
 - [x] Frontend: Updated `script.js` to dynamically generate multiple datasets with rotating colors.
 - [x] Result: Visualization now supports complex comparisons (e.g., Sales vs Profit).
 
-## Phase 9: Verifying
+- [x] Result: Visualization now supports complex comparisons (e.g., Sales vs Profit).
+
+## Phase 9: Seeding Update
+- [x] Increased Seed Data counts (Users: 100, Products: 100, Orders: 500) via `init_db.py`.
+- [x] Increased Seed Data counts (Users: 100, Products: 100, Orders: 500) via `init_db.py`.
+- [x] Regenerating database to provide richer dataset for charts.
+
+## Phase 10: Full Seeding Refactor
+- [x] Rewrote `seeder.py` to support **ALL 19 Tables** in `schema.sql`.
+- [x] Adopted Clean Architecture: Organized seeders by Domain (Users, Catalog, Sales, Logistics, Engagement).
+- [x] Database now contains mocked data for Shipments, Invoices, Wishlists, etc.
+
+## Phase 11: Verifying
 - Testing Chart Interactions.
