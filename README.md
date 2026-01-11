@@ -93,11 +93,10 @@ Go to the web UI and try these queries:
 
 ## 🛠️ Tech Stack
 - **Backend**: FastAPI, Uvicorn, Pydantic
-- **AI/LLM**: Google GenAI SDK (Gemini 2.0 Flash)
+- **AI/LLM**: Google GenAI SDK (Gemini 3.0 Flash)
 - **Database**: SQLite
 - **Frontend**: HTML5, Vanilla CSS, Chart.js
 - **Ops**: Docker, Docker Compose
 
 ---
-**Author**: Antigravity Team
 **License**: MIT
