@@ -1,6 +1,6 @@
 # 📊 Text-to-SQL AI Assistant
 
-An intelligent **Text-to-SQL Query Generator** powered by **Google Gemini 2.0 (Flash)**.
+An intelligent **Text-to-SQL Query Generator** powered by **Google Gemini 3.0 (Flash)**.
 It allows non-technical users to query a database using natural language, featuring **AI-driven visualization**, **schema-aware RAG**, and a **clean SaaS-style UI**.
 
 ---
