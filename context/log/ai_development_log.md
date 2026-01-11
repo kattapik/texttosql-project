@@ -74,5 +74,47 @@ This document tracks the development decision flow, AI reasoning, and major impl
 - [x] Adopted Clean Architecture: Organized seeders by Domain (Users, Catalog, Sales, Logistics, Engagement).
 - [x] Database now contains mocked data for Shipments, Invoices, Wishlists, etc.
 
-## Phase 11: Verifying
-- Testing Chart Interactions.
+- [x] Adopted Clean Architecture: Organized seeders by Domain (Users, Catalog, Sales, Logistics, Engagement).
+- [x] Database now contains mocked data for Shipments, Invoices, Wishlists, etc.
+
+## Phase 11: Interface Synchronization
+- [x] Detected missing `suggest_chart` in `ILLMService` interface.
+- [x] Updated `app/domain/interfaces.py` to match `GeminiService` implementation.
+- [x] Result: Enforced Contract stability and reduced Technical Debt.
+
+- [x] Result: Enforced Contract stability and reduced Technical Debt.
+
+## Phase 12: Docker & Deployment
+- [x] Updated `Dockerfile` to launch `uvicorn` (FastAPI Server) instead of `main.py` (Console).
+- [x] Exposed internal Port 8000.
+- [x] Updated `docker-compose.yml`:
+    - Added Port Mapping `8000:8000`.
+    - Added Volume Mounts for `server.py`, `templates`, `static` (Hot Reload).
+
+    - Added Volume Mounts for `server.py`, `templates`, `static` (Hot Reload).
+
+## Phase 13: Debugging
+- [x] Fixed `AssertionError: jinja2 must be installed`.
+- [x] Added `jinja2` to `requirements.txt`.
+
+- [x] Added `jinja2` to `requirements.txt`.
+
+## Phase 14: Docker Optimization
+- [x] Pinned `Dockerfile` to `python:3.11` for stable paths.
+- [x] Added Persistent Volumes `python_libs` and `pip_cache` in `docker-compose.yml`.
+- [x] Moved `pip install` to `CMD` logic -> Incremental installs on container restart!
+- [x] Moved `pip install` to `CMD` logic -> Incremental installs on container restart!
+- [x] Result: No need to rebuild container for small `requirements.txt` changes.
+
+## Phase 15: Debugging & Polish
+- [x] Fixed `404 Not Found` for `/favicon.ico` by adding a 204 No Content route.
+- [x] Logs are now cleaner.
+
+- [x] Logs are now cleaner.
+
+## Phase 16: Documentation
+- [x] Created `README.md` with standard sections (Features, Setup, Docker, Tech Stack).
+- [x] Created `.env.example` for easier onboarding.
+
+## Phase 17: Verifying
+- Testing Docker Build (User-side).

@@ -8,6 +8,7 @@ WORKDIR /app
 COPY requirements.txt .
 
 # Install any needed packages specified in requirements.txt
+# (This build-time install serves as a baseline)
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the rest of the application code
@@ -21,4 +22,11 @@ RUN python init_db.py
 # ENV DB_PATH=sqlite.db
 
 # Run init_db.py if DB is missing, then start the app
-CMD ["sh", "-c", "if [ ! -f data/sqlite.db ]; then python init_db.py; fi && python main.py"]
+# Expose the port the app runs on
+EXPOSE 8000
+
+# Runtime command: 
+# 1. Install/Update dependencies (Fast because of persistent volume)
+# 2. Initialize DB if needed
+# 3. Start Server
+CMD ["sh", "-c", "pip install -r requirements.txt && if [ ! -f data/sqlite.db ]; then python init_db.py; fi && uvicorn server:server --host 0.0.0.0 --port 8000"]

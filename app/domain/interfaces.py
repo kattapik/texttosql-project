@@ -33,6 +33,11 @@ class ILLMService(ABC):
         """Guesses relevant tables based on the query."""
         pass
 
+    @abstractmethod
+    def suggest_chart(self, query: str, columns: List[str]) -> Optional[Dict[str, Any]]:
+        """Analyzes query and data to suggest visualization chart."""
+        pass
+
 class IRagEngine(ABC):
     """Interface for RAG Operations."""
 

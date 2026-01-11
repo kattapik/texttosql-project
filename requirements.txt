@@ -6,3 +6,4 @@ Faker
 fastapi
 uvicorn
 pydantic
+jinja2

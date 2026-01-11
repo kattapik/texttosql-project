@@ -12,8 +12,18 @@ services:
       - ./data:/app/data
       - ./app:/app/app #for development
       - ./init_db.py:/app/init_db.py #for development
-      - ./main.py:/app/main.py #for development
+      - ./server.py:/app/server.py #for development
+      - ./static:/app/static #for development
+      - ./templates:/app/templates #for development
       - ./requirements.txt:/app/requirements.txt #for development
+      - python_libs:/usr/local/lib/python3.11/site-packages # Persist installed packages
+      - pip_cache:/root/.cache/pip # Cache downloads
+    ports:
+      - "8000:8000"
     # Enable interactive mode (Crucial for python input())
     stdin_open: true 
     tty: true
+
+volumes:
+  python_libs:
+  pip_cache:

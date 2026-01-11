@@ -57,6 +57,11 @@ class QueryResponse(BaseModel):
 async def read_root(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
+@server.get("/favicon.ico")
+async def favicon():
+    from fastapi import Response
+    return Response(status_code=204)  # No Content
+
 @server.post("/api/query", response_model=QueryResponse)
 async def process_query(request: QueryRequest):
     user_query = request.query
@@ -147,4 +152,4 @@ async def process_query(request: QueryRequest):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(server, host="127.0.0.1", port=8000)
+    uvicorn.run(server, host="0.0.0.0", port=8000)
