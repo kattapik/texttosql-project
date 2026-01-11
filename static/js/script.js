@@ -120,29 +120,51 @@ function renderChart(config, data) {
 
     // Extract Data using Column Mapping Strategy
     const xColIndex = data.columns.indexOf(config.x_column);
-    const yColIndex = data.columns.indexOf(config.y_column);
-
-    if (xColIndex === -1 || yColIndex === -1) {
-        console.warn("Chart columns not found in data result.");
+    if (xColIndex === -1) {
+        console.warn("X-Column not found.");
         chartContainer.classList.add('hidden');
         return;
     }
 
     const labels = data.rows.map(row => row[xColIndex]);
-    const values = data.rows.map(row => row[yColIndex]);
+    const datasets = [];
+    const colors = [
+        'rgba(37, 99, 235',   // Blue
+        'rgba(220, 38, 38',   // Red
+        'rgba(22, 163, 74',   // Green
+        'rgba(217, 119, 6',   // Amber
+        'rgba(147, 51, 234'   // Purple
+    ];
+
+    // Loop through each Y-column to create a dataset
+    config.y_columns.forEach((colName, index) => {
+        const yColIndex = data.columns.indexOf(colName);
+        if (yColIndex !== -1) {
+            const values = data.rows.map(row => row[yColIndex]);
+            const colorBase = colors[index % colors.length];
+            
+            datasets.push({
+                label: config.labels[index] || colName,
+                data: values,
+                backgroundColor: `${colorBase}, 0.5)`,
+                borderColor: `${colorBase}, 1)`,
+                borderWidth: 1
+            });
+        }
+    });
+
+    if (datasets.length === 0) {
+        console.warn("No valid Y-columns found.");
+        chartContainer.classList.add('hidden');
+        return;
+    }
 
     // Create New Chart
     currentChart = new Chart(ctx, {
         type: config.chart_type,
         data: {
             labels: labels,
-            datasets: [{
-                label: config.label || config.y_column,
-                data: values,
-                backgroundColor: 'rgba(37, 99, 235, 0.5)',
-                borderColor: 'rgba(37, 99, 235, 1)',
-                borderWidth: 1
-            }]
+            datasets: datasets
         },
         options: {
             responsive: true,

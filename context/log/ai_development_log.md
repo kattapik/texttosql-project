@@ -57,5 +57,10 @@ This document tracks the development decision flow, AI reasoning, and major impl
 - [x] Updated `requirements.txt`.
 - [x] Refactored `GeminiService` to use `genai.Client` and `types`.
 
-## Phase 8: Verifying
-- Testing Web App interactions.
+## Phase 8: Chart Enhancements (Multi-Column)
+- [x] Backend: Updated `suggest_chart` to support returning multiple Y-columns (`y_columns` list) and `labels`.
+- [x] Frontend: Updated `script.js` to dynamically generate multiple datasets with rotating colors.
+- [x] Result: Visualization now supports complex comparisons (e.g., Sales vs Profit).
+
+## Phase 9: Verifying
+- Testing Chart Interactions.

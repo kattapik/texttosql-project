@@ -109,8 +109,8 @@ class GeminiService(ILLMService):
         - "chart_type": One of ["bar", "line", "pie", "doughnut", "scatter", "none"]. Use "none" if a table is better.
         - "title": A concise title for the chart.
         - "x_column": The column name to use for the X-axis (labels).
-        - "y_column": The column name to use for the Y-axis (values).
-        - "label": A label for the dataset (e.g., "Total Revenue").
+        - "y_columns": A LIST of column names to use for the Y-axis (values). E.g. ["sales", "profit"].
+        - "labels": A LIST of labels for each dataset (e.g., ["Total Revenue", "Net Profit"]).
         
         If "chart_type" is "none", other fields can be null.
         """
@@ -129,10 +129,10 @@ class GeminiService(ILLMService):
                             "chart_type": {"type": "string"},
                             "title": {"type": "string"},
                             "x_column": {"type": "string"},
-                            "y_column": {"type": "string"},
-                            "label": {"type": "string"}
+                            "y_columns": {"type": "array", "items": {"type": "string"}},
+                            "labels": {"type": "array", "items": {"type": "string"}}
                         },
-                        "required": ["chart_type", "title", "x_column", "y_column", "label"]
+                        "required": ["chart_type", "title", "x_column", "y_columns", "labels"]
                     }
                 )
             )
