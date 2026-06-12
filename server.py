@@ -37,17 +37,27 @@ db_repo = SqliteRepository(DB_PATH)
 embedding_service = EmbeddingService()
 vector_store = SchemaVectorStore(embedding_service)
 
-# Index schema into vector store on startup
-all_tables = db_repo.get_all_table_names()
-if all_tables:
-    schema_list = db_repo.get_schema_info(all_tables)
-    vector_store.index_schema(schema_list)
-    print(f"[*] Indexed {len(schema_list)} tables into vector store.")
-else:
-    print("[*] No tables found in database. Run init_db.py first.")
+import threading
 
+# Initialize RAG and Validator
 rag_engine = RagEngine(db=db_repo, vector_store=vector_store)
 validator = SqlValidator()
+
+def init_vector_store():
+    t0 = time.time()
+    try:
+        all_tables = db_repo.get_all_table_names()
+        if all_tables:
+            schema_list = db_repo.get_schema_info(all_tables)
+            vector_store.index_schema(schema_list)
+            print(f"[*] Indexed {len(schema_list)} tables into vector store in {time.time() - t0:.2f}s.")
+        else:
+            print("[*] No tables found in database. Run init_db.py first.")
+    except Exception as e:
+        print(f"[*] Error indexing schema in background: {e}")
+
+# Run schema indexing in background thread to keep startup instant
+threading.Thread(target=init_vector_store, daemon=True).start()
 
 def create_llm_from_request(req: "QueryRequest") -> ILLMService:
     api_key = req.api_key or os.getenv(f"{req.provider.upper()}_API_KEY") or os.getenv("GOOGLE_API_KEY")
@@ -80,7 +90,7 @@ class QueryResponse(BaseModel):
 
 @server.get("/", response_class=HTMLResponse)
 async def read_root(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
+    return templates.TemplateResponse(request=request, name="index.html")
 
 @server.get("/favicon.ico")
 async def favicon():
@@ -89,6 +99,10 @@ async def favicon():
 
 @server.get("/api/settings")
 async def get_settings():
+    try:
+        all_tables = db_repo.get_all_table_names()
+    except Exception:
+        all_tables = []
     return {
         "presets": {
             key: {
@@ -97,11 +111,13 @@ async def get_settings():
                 "base_url": val["base_url"]
             }
             for key, val in PROVIDER_PRESETS.items()
-        }
+        },
+        "tables": all_tables
     }
 
 @server.post("/api/query", response_model=QueryResponse)
 async def process_query(request: QueryRequest):
+    print(f"[DEBUG] incoming request: provider={request.provider}, has_api_key={bool(request.api_key)}")
     user_query = request.query
 
     if not user_query:

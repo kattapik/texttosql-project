@@ -12,13 +12,23 @@ class DataSeeder:
     def __init__(self, db_repo: SqliteRepository):
         self.db_repo = db_repo
         self.fake = Faker()
+        self.conn = None
+        self.cursor = None
     
-    def _execute(self, sql: str):
-        """Helper to execute SQL silently"""
-        self.db_repo.execute_query(sql)
+    def _execute(self, sql: str) -> int:
+        """Helper to execute SQL silently and return lastrowid if available"""
+        if self.cursor:
+            self.cursor.execute(sql)
+            return self.cursor.lastrowid
+        res = self.db_repo.execute_query(sql)
+        return None
 
     def _get_ids(self, table_name: str, id_col: str) -> list:
         """Helper to fetch all IDs from a table"""
+        if self.cursor:
+            self.cursor.execute(f"SELECT {id_col} FROM {table_name}")
+            rows = self.cursor.fetchall()
+            return [row[0] for row in rows]
         res = self.db_repo.execute_query(f"SELECT {id_col} FROM {table_name}")
         if res.success and res.rows:
             return [row[0] for row in res.rows]
@@ -31,8 +41,8 @@ class DataSeeder:
     def seed_users(self, count=100):
         print(f"[*] Seeding Users ({count})...")
         for _ in range(count):
-            username = self.fake.unique.user_name()
-            email = self.fake.unique.email()
+            username = self.fake.unique.user_name().replace("'", "''")
+            email = self.fake.unique.email().replace("'", "''")
             password_hash = self.fake.sha256()
             role_id = 2  # Customer
             
@@ -48,10 +58,13 @@ class DataSeeder:
         for uid in user_ids:
             # Generate 1-3 addresses per user
             for _ in range(random.randint(1, 3)):
-                city = self.fake.city().replace("'", "")
+                street = self.fake.street_address().replace("'", "''")
+                city = self.fake.city().replace("'", "''")
+                zipcode = self.fake.zipcode().replace("'", "''")
+                country = self.fake.country().replace("'", "''")
                 sql = f"""
                     INSERT INTO user_addresses (user_id, address_line1, city, postal_code, country, is_default)
-                    VALUES ({uid}, '{self.fake.street_address()}', '{city}', '{self.fake.zipcode()}', '{self.fake.country()}', {random.randint(0, 1)});
+                    VALUES ({uid}, '{street}', '{city}', '{zipcode}', '{country}', {random.randint(0, 1)});
                 """
                 self._execute(sql)
 
@@ -78,10 +91,10 @@ class DataSeeder:
         adjectives = ["Ergonomic", "Rustic", "Intelligent", "Small", "Fantastic", "Practical", "Sleek"]
         materials = ["Steel", "Wooden", "Concrete", "Plastic", "Cotton", "Granite", "Rubber"]
         types_ = ["Chair", "Car", "Computer", "Keyboard", "Mouse", "Bike", "Ball", "Gloves", "Pants", "Shirt"]
-
+ 
         for _ in range(count):
-            title = f"{random.choice(adjectives)} {random.choice(materials)} {random.choice(types_)}"
-            desc = self.fake.sentence().replace("'", "")
+            title = f"{random.choice(adjectives)} {random.choice(materials)} {random.choice(types_)}".replace("'", "''")
+            desc = self.fake.sentence().replace("'", "''")
             price = round(random.uniform(10.0, 999.0), 2)
             sku = self.fake.unique.bothify(text='??-####-???').upper()
             
@@ -108,7 +121,7 @@ class DataSeeder:
             
             # Inventory
             qty = random.randint(0, 200)
-            self._execute(f"INSERT INTO inventory (product_id, quantity_in_stock) VALUES ({pid}, {qty})")
+            self._execute(f"INSERT OR IGNORE INTO inventory (product_id, quantity_in_stock) VALUES ({pid}, {qty})")
 
     # ==========================================
     # 3. Logistics Domain (Carriers)
@@ -149,12 +162,12 @@ class DataSeeder:
             status = random.choice(statuses)
             
             # Create Order
-            self._execute(f"INSERT INTO orders (user_id, total_amount, status) VALUES ({user_id}, 0, '{status}')")
+            order_id = self._execute(f"INSERT INTO orders (user_id, total_amount, status) VALUES ({user_id}, 0, '{status}')")
             
             # Get Order ID
-            # In production we'd use RETURNING id, but for sqlite compatibility sticking to max
-            oid_res = self.db_repo.execute_query("SELECT MAX(order_id) FROM orders")
-            order_id = oid_res.rows[0][0]
+            if order_id is None:
+                oid_res = self.db_repo.execute_query("SELECT MAX(order_id) FROM orders")
+                order_id = oid_res.rows[0][0]
 
             # Add Order Items
             total_amount = 0
@@ -198,10 +211,11 @@ class DataSeeder:
 
         for uid in user_ids:
             if random.random() > 0.3:
-                self._execute(f"INSERT INTO wishlists (user_id, name) VALUES ({uid}, 'My Favorites')")
+                wid = self._execute(f"INSERT INTO wishlists (user_id, name) VALUES ({uid}, 'My Favorites')")
                 # Get Wishlist ID
-                res = self.db_repo.execute_query("SELECT MAX(wishlist_id) FROM wishlists")
-                wid = res.rows[0][0]
+                if wid is None:
+                    res = self.db_repo.execute_query("SELECT MAX(wishlist_id) FROM wishlists")
+                    wid = res.rows[0][0]
                 
                 # Add items
                 for _ in range(random.randint(1, 5)):
@@ -223,7 +237,7 @@ class DataSeeder:
             user_id, product_id = row
             if random.random() < 0.4: # 40% chance to review
                 rating = random.randint(3, 5) # Skew positive
-                comment = self.fake.sentence().replace("'", "")
+                comment = self.fake.sentence().replace("'", "''")
                 self._execute(f"INSERT INTO reviews (user_id, product_id, rating, comment) VALUES ({user_id}, {product_id}, {rating}, '{comment}')")
 
     # ==========================================
@@ -231,26 +245,40 @@ class DataSeeder:
     # ==========================================
 
     def seed_all(self, num_users=100, num_products=100, num_orders=500):
+        import sqlite3
         print("\n=== INITIALIZING FULL DATABASE SEEDING ===")
         
-        # 1. Independent / Static
-        self.seed_categories_and_brands()
-        self.seed_logistics()
-        self.seed_coupons()
+        self.conn = sqlite3.connect(self.db_repo.db_path)
+        self.cursor = self.conn.cursor()
         
-        # 2. Users
-        self.seed_users(num_users)
-        self.seed_user_addresses()
-        
-        # 3. Catalog
-        self.seed_products(num_products)
-        self.seed_product_details()
-        
-        # 4. Sales & Orders (The heavy lifting)
-        self.seed_orders(num_orders)
-        
-        # 5. Engagement
-        self.seed_wishlists()
-        self.seed_reviews()
-        
-        print("=== SEEDING COMPLETE ===")
+        try:
+            # 1. Independent / Static
+            self.seed_categories_and_brands()
+            self.seed_logistics()
+            self.seed_coupons()
+            
+            # 2. Users
+            self.seed_users(num_users)
+            self.seed_user_addresses()
+            
+            # 3. Catalog
+            self.seed_products(num_products)
+            self.seed_product_details()
+            
+            # 4. Sales & Orders (The heavy lifting)
+            self.seed_orders(num_orders)
+            
+            # 5. Engagement
+            self.seed_wishlists()
+            self.seed_reviews()
+            
+            self.conn.commit()
+            print("=== SEEDING COMPLETE ===")
+        except Exception as e:
+            self.conn.rollback()
+            print(f"Error seeding database: {e}")
+            raise e
+        finally:
+            self.conn.close()
+            self.conn = None
+            self.cursor = None

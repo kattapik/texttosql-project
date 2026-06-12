@@ -200,6 +200,12 @@ async function sendQuery() {
             })
         });
 
+        if (!response.ok) {
+            const errData = await response.json();
+            const msg = errData.detail || errData.error || `Server returned status ${response.status}`;
+            throw new Error(msg);
+        }
+
         const data = await response.json();
 
         document.getElementById("loading").classList.add("hidden");
@@ -260,7 +266,7 @@ async function sendQuery() {
     } catch (e) {
         document.getElementById("loading").classList.add("hidden");
         const errEl = document.getElementById("errorMsg");
-        errEl.textContent = "Network Error: " + e;
+        errEl.textContent = e.message || e;
         errEl.classList.remove("hidden");
         document.getElementById("resultsArea").classList.remove("hidden");
     }
@@ -364,5 +370,35 @@ document.getElementById("userQuery").addEventListener("keydown", function(e) {
     if (e.key === "Enter" && !e.shiftKey) {
         e.preventDefault();
         sendQuery();
+    }
+});
+
+// ==========================================
+// Database Tables Loader
+// ==========================================
+
+document.addEventListener("DOMContentLoaded", async () => {
+    try {
+        const resp = await fetch('/api/settings');
+        const data = await resp.json();
+        if (data.presets) {
+            providerPresets = data.presets;
+        }
+        
+        // Render available tables
+        if (data.tables) {
+            const container = document.getElementById("availableTablesList");
+            if (container) {
+                container.innerHTML = "";
+                data.tables.forEach(table => {
+                    const tag = document.createElement("span");
+                    tag.className = "tag";
+                    tag.textContent = table;
+                    container.appendChild(tag);
+                });
+            }
+        }
+    } catch (e) {
+        console.error('Failed to load available tables:', e);
     }
 });
