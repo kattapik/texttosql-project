@@ -9,6 +9,8 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from app.infrastructure.sqlite_db import SqliteRepository
 from app.infrastructure.gemini_llm import GeminiService
+from app.infrastructure.embeddings import EmbeddingService
+from app.infrastructure.vector_store import SchemaVectorStore
 from app.services.rag_engine import RagEngine
 from app.services.validator import SqlValidator
 from app.domain.models import ExecutionResult
@@ -23,7 +25,7 @@ def main():
     
     # 1. Configuration & Setup
     api_key = os.getenv("GOOGLE_API_KEY")
-    db_path = os.getenv("DB_PATH", "sqlite.db")
+    db_path = os.getenv("DB_PATH", "data/sqlite.db")
     
     if not api_key or "your_gemini_api_key_here" in api_key:
         print("ERROR: GOOGLE_API_KEY not found or invalid in .env")
@@ -40,9 +42,21 @@ def main():
     
     print("[*] Initializing Gemini Service...")
     llm_service = GeminiService(api_key=api_key)
-    
+
+    print("[*] Initializing Embedding Service...")
+    embedding_service = EmbeddingService()
+
+    print("[*] Initializing Vector Store...")
+    vector_store = SchemaVectorStore(embedding_service)
+
+    print("[*] Indexing Schema into Vector Store...")
+    all_tables = db_repo.get_all_table_names()
+    schema_list = db_repo.get_schema_info(all_tables)
+    vector_store.index_schema(schema_list)
+    print(f"     Indexed {len(schema_list)} tables.")
+
     print("[*] Initializing Services...")
-    rag_engine = RagEngine(db=db_repo, llm=llm_service)
+    rag_engine = RagEngine(db=db_repo, vector_store=vector_store)
     validator = SqlValidator()
     
     print("\nSystem Ready. Type 'exit' to quit.\n")

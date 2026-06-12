@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import List, Dict, Any, Optional
-from app.domain.models import SchemaInfo, SQLGeneration, ExecutionResult, ValidationResult
+from app.domain.models import SchemaInfo, SchemaChunk, SQLGeneration, ExecutionResult, ValidationResult
 
 class IDatabase(ABC):
     """Interface for Database Operations."""
@@ -44,6 +44,32 @@ class IRagEngine(ABC):
     @abstractmethod
     def get_context(self, query: str) -> List[SchemaInfo]:
         """Retrieves the relevant schema context for a query."""
+        pass
+
+class IVectorStore(ABC):
+    """Interface for Vector Storage operations."""
+
+    @abstractmethod
+    def index_schema(self, schema_list: List[SchemaInfo]) -> None:
+        """Indexes list of SchemaInfo into vector store."""
+        pass
+
+    @abstractmethod
+    def search(self, query: str, k: int = 5) -> List[SchemaChunk]:
+        """Searches for top-k most relevant schema chunks."""
+        pass
+
+    @abstractmethod
+    def clear(self) -> None:
+        """Clears all indexed data."""
+        pass
+
+class IEmbeddingService(ABC):
+    """Interface for Embedding operations."""
+
+    @abstractmethod
+    def embed(self, text: str) -> List[float]:
+        """Converts text to embedding vector."""
         pass
 
 class IValidator(ABC):

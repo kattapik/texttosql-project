@@ -9,6 +9,13 @@ class SchemaInfo:
     sample_rows: List[Dict[str, Any]]
 
 @dataclass
+class SchemaChunk:
+    """A chunked piece of schema information for embedding/retrieval."""
+    content: str
+    table_name: str
+    columns: List[str]
+
+@dataclass
 class UserQuery:
     """Represents the user's natural language query."""
     text: str
